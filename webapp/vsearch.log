@@ -1,0 +1,4 @@
+ImmutableMultiDict([('phrase', 'SARDEEN'), ('letters', 'aeiou')]) | 127.0.0.1 | Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:63.0) Gecko/20100101 Firefox/63.0 | set()
+ImmutableMultiDict([('phrase', 'big boben'), ('letters', 'aeiou')]) | 127.0.0.1 | Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:63.0) Gecko/20100101 Firefox/63.0 | {'i', 'e', 'o'}
+ImmutableMultiDict([('phrase', 'xympwl'), ('letters', 'xlw')]) | 127.0.0.1 | Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:63.0) Gecko/20100101 Firefox/63.0 | {'w', 'x', 'l'}
+ImmutableMultiDict([('phrase', 'hello'), ('letters', 'aeiou')]) | 127.0.0.1 | Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:63.0) Gecko/20100101 Firefox/63.0 | {'e', 'o'}
