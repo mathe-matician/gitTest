@@ -31,7 +31,10 @@ def do_search() -> "html":
     letters = request.form["letters"]
     title = "Here are your results:"
     results = str(search4letters(phrase, letters))
-    log_request(request, results)
+    try:
+        log_request(request, results)
+    except Exception as err:
+        print("***** There was an error connecting: ", str(err))
     return render_template("results.html",
                            the_phrase = phrase,
                            the_letters = letters,
@@ -58,16 +61,19 @@ def do_logout():
 @check_logged_in
 def view_log() -> "html":
 
-    with UseDatabase(app.config["dbconfig"]) as cursor:
-        _SQL = """select phrase, letters, ip, browser_string, results from log"""
-        cursor.execute(_SQL)
-        contents = cursor.fetchall()
+    try:
+        with UseDatabase(app.config["dbconfig"]) as cursor:
+            _SQL = """select phrase, letters, ip, browser_string, results from log"""
+            cursor.execute(_SQL)
+            contents = cursor.fetchall()
 
-    titles = ("Phrase", "Letters", "Remote_addr", "User_agent", "Results")
-    return render_template("viewlog.html",
-                           the_title = "App Request Log",
-                           the_row_titles = titles,
-                           the_data = contents)
+        titles = ("Phrase", "Letters", "Remote_addr", "User_agent", "Results")
+        return render_template("viewlog.html",
+                               the_title = "App Request Log",
+                               the_row_titles = titles,
+                               the_data = contents)
+    except Exception as err:
+        print("Something went wrong: ", str(err))
 
 app.secret_key = "YouWillNeverGuessMySecretKey"
 
