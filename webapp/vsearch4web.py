@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request, escape, session
+
 from vsearch import search4letters
-from DBcm import UseDatabase
+
+from DBcm import UseDatabase, ConnectionError, CredentialsError, SQLError
+
 from checker import check_logged_in
 
 
@@ -10,23 +13,29 @@ app.config["dbconfig"] = {"host": "127.0.0.1",
                           "password": "pass",
                           "database": "vsearchlogDB"}
 
-def log_request(req: "flask_request", res: str) -> None:
-    """Log details of the web request and the results in database"""
-
-    with UseDatabase(app.config["dbconfig"]) as cursor:
-        _SQL = """insert into log
-                (phrase, letters, ip, browser_string, results)
-                values
-                (%s, %s, %s, %s, %s)"""
-
-        cursor.execute(_SQL, (req.form["phrase"],
-                              req.form["letters"],
-                              req.remote_addr,
-                              req.user_agent.browser,
-                              res ))
-
 @app.route("/search4", methods=["POST"])
 def do_search() -> "html":
+    
+    def log_request(req: "flask_request", res: str) -> None:
+        try:
+            with UseDatabase(app.config["dbconfig"]) as cursor:
+                _SQL = """insert into log
+                        (phrase, letters, ip, browser_string, results)
+                        values
+                        (%s, %s, %s, %s, %s)"""
+                cursor.execute(_SQL, (req.form["phrase"],
+                                      req.form["letters"],
+                                      req.remote_addr,
+                                      req.user_agent.browser,
+                                      res ))
+        except ConnectionError as err:
+            print("Is your database connected? Error: ", str(err))
+        except CredentialsError as err:
+            print("User-ID/password issues. Error: ", str(err))
+        except SQLError as err:
+            print("Is your query correct? Error: ", str(err))
+        return "Error"
+        
     phrase = request.form["phrase"]
     letters = request.form["letters"]
     title = "Here are your results:"
@@ -72,8 +81,16 @@ def view_log() -> "html":
                                the_title = "App Request Log",
                                the_row_titles = titles,
                                the_data = contents)
+    except ConnectionError as err:
+        print("Is your database switched on? Error: ", str(err))
+    except CredentialsError as err:
+        print("User-ID/passsword issue. Error: ", str(err))
+    except SQLError as err:
+        print("Is your query correct? Error: ", str(err))
     except Exception as err:
         print("Something went wrong: ", str(err))
+
+    return "Error"
 
 app.secret_key = "YouWillNeverGuessMySecretKey"
 
