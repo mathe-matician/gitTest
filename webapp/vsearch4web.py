@@ -1,10 +1,14 @@
-from flask import Flask, render_template, request, escape, session
+from flask import Flask, render_template, request, escape, session, copy_current_request_context
 
 from vsearch import search4letters
 
 from DBcm import UseDatabase, ConnectionError, CredentialsError, SQLError
 
 from checker import check_logged_in
+
+from threading import Thread
+
+from time import sleep
 
 
 app = Flask(__name__)
@@ -15,8 +19,14 @@ app.config["dbconfig"] = {"host": "127.0.0.1",
 
 @app.route("/search4", methods=["POST"])
 def do_search() -> "html":
-    
+
+    #current request context means it ensures that the HTTP request that
+    #is active when a function is called remains active even when the
+    #function is executed in a thread. A copy of the request context is
+    #created and then pushed when the function is called.
+    @copy_current_request_context 
     def log_request(req: "flask_request", res: str) -> None:
+        sleep(15)#simulate long computing time
         try:
             with UseDatabase(app.config["dbconfig"]) as cursor:
                 _SQL = """insert into log
@@ -35,13 +45,16 @@ def do_search() -> "html":
         except SQLError as err:
             print("Is your query correct? Error: ", str(err))
         return "Error"
-        
+
+    #flask.request is used below to access the keys in the
+    #flask.request.form - aka the phrase and letters keys.
     phrase = request.form["phrase"]
     letters = request.form["letters"]
     title = "Here are your results:"
     results = str(search4letters(phrase, letters))
     try:
-        log_request(request, results)
+        t = Thread(target = log_request, args = (request, results))
+        t.start()
     except Exception as err:
         print("***** There was an error connecting: ", str(err))
     return render_template("results.html",
