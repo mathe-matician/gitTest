@@ -2,6 +2,9 @@ import csv
 from datetime import datetime
 from pprint import pprint
 
+def convert2ampm(time: str):
+    return datetime.strptime(time, "%H:%M").strftime("%I:%M%p")
+
 with open("buzzers.csv") as data:
     ignore = data.readline()
     flights = {}
@@ -10,3 +13,10 @@ with open("buzzers.csv") as data:
         flights[k] = v
 
 pprint(flights)
+
+flights2 = {}
+
+for k, v in flights.items():
+    flights2[convert2ampm(k)] = v.title()
+
+pprint(flights2)
